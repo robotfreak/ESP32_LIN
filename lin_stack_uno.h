@@ -35,6 +35,7 @@
 */ 
 
 #include <Arduino.h>
+#if defined(__AVR_ATmega328P__)  // Arduino UNO, NANO
 
 /*
 	Please, read Getting Started Guide firts.
@@ -73,3 +74,4 @@ class lin_stack_uno
 		byte calcIdentParity(byte ident);
 		
 };
+#endif

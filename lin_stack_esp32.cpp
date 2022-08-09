@@ -33,9 +33,8 @@
  * 
  *	Modificado para ESP32 por @autobytes
  */ 
-
 #include <lin_stack_esp32.h>
-
+#if defined (ARDUINO_ARCH_ESP32)
 
 /* LIN PACKET:
    It consist of:
@@ -194,7 +193,8 @@ int lin_stack_esp32::read(byte data[], byte data_size){
 			Serial2.readBytes(rec,data_size+3);
 			if((validateParity(rec[1]))&(validateChecksum(rec,data_size+3))){
 				for(int j=0;j<data_size;j++){
-				data[j] = rec[j+2];
+					data[j] = rec[j+2];
+				    Serial.println(data[j], HEX);
 				}
 				return 1;
 			}else{
@@ -217,7 +217,11 @@ int lin_stack_esp32::readStream(byte data[],byte data_size){
 		}
 	}else if(ch==2){ // For LIN2 or Serial2
 		if(Serial2.read() != -1){ // Check if there is an event on LIN bus
-			Serial2.readBytes(data,data_size);
+			Serial2.readBytes(rec,data_size);
+			for(int j=0;j<data_size;j++){
+				data[j] = rec[j];
+			    Serial.println(data[j], HEX);
+			}
 			return 1;
 		}
 	}
@@ -374,3 +378,4 @@ byte lin_stack_esp32::calcIdentParity(byte ident)
   byte p1 = ~(BIT(ident,1) ^ BIT(ident,3) ^ BIT(ident,4) ^ BIT(ident,5));
   return (p0 | (p1<<1))<<6;
 }
+#endif

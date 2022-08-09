@@ -15,26 +15,38 @@
  */
  
 // Including LIN Stack library
-#include <lin_stack_esp32.h>
+//#include <lin_stack_esp32.h>
+#include <Arduino.h>
 #include <HardwareSerial.h>
 
+#define LED_BUILTIN 2
+
 // Variables
-const byte ident = 0; // Identification Byte
+const byte ident = 0x11; // Identification Byte
 byte data_size=8; // length of byte array
 byte data[8]; // byte array for received data
 
 // Creating LIN Object
-lin_stack_esp32 LIN1(2,ident); // 2 - channel (GPIO 16 & 17), ident - Identification Byte
+//lin_stack_esp32 LIN1(2,ident); // 2 - channel (GPIO 16 & 17), ident - Identification Byte
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(9600); // Configure Serial for Serial Monitor
-  LIN1.setSerial(); // Configure Serial for receiving
+  Serial.println("ESP32 LIN Sniffer");
+
+  Serial2.begin(19200); // Configure Serial for Serial Monitor
+  //LIN1.setSerial(); // Configure Serial for receiving
 }
 
 void loop() {
    // Checking LIN Bus periodicly
-  byte a = LIN1.readStream(data, data_size);
-  if(a == 1){ // If there was an event on LIN Bus, Traffic was detected. Print data to serial monitor
+   int c;
+  //byte a = LIN1.readStream(data, data_size);
+  //if(a == 1){ // If there was an event on LIN Bus, Traffic was detected. Print data to serial monitor
+  c = Serial2.available();
+  if (c > 0) {
+     digitalWrite(LED_BUILTIN, HIGH);
+     Serial2.readBytes(data, c);    
      Serial.println("Traffic detected!");
      Serial.print("Synch Byte: ");
      Serial.println(data[0], HEX);
@@ -53,5 +65,6 @@ void loop() {
      Serial.print("Check Byte: ");
      Serial.println(data[7]);
      Serial.print("\n");
+     digitalWrite(LED_BUILTIN, LOW);
   } 
 }

@@ -33,8 +33,8 @@
  *
  *  Modified for use in ESP32 by @autobytes
 */ 
-
 #include <Arduino.h>
+#if defined(ARDUINO_ARCH_ESP32)  // Arduino UNO, NANO
 
 /*
 	Please, read Getting Started Guide firts.
@@ -73,3 +73,4 @@ class lin_stack_esp32
 		byte calcIdentParity(byte ident);
 		
 };
+#endif

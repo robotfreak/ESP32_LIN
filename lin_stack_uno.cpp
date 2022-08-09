@@ -35,6 +35,7 @@
  */ 
 
 #include <lin_stack_uno.h>
+#if defined(__AVR_ATmega328P__)  // Arduino UNO, NANO
 
 /* LIN PACKET:
    It consist of:
@@ -269,3 +270,4 @@ byte lin_stack_uno::calcIdentParity(byte ident)
   byte p1 = ~(BIT(ident,1) ^ BIT(ident,3) ^ BIT(ident,4) ^ BIT(ident,5));
   return (p0 | (p1<<1))<<6;
 }
+#endif
