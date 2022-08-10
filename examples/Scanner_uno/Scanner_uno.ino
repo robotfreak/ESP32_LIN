@@ -21,21 +21,24 @@
 lin_stack_uno LIN2(2);
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT); 
 }
 
-byte packageRED[] = {128,  0,  0,  0}; // RED ON
-byte packageGRN[] = {  0,128,  0,  0}; // GREEN ON
-byte packageBLU[] = {  0,  0,128,  0}; // BLUE ON
-byte packageOFF[] = {  1,  1,  1,  0}; // LEDs OFF
+unsigned int id_min = 0;
+unsigned int id_max = 63;
+byte data[8];
+unsigned int data_size = 4;
+int ret;
 
 void loop() {
-  // Create Data Package
-  LIN2.write(0x11, packageRED, 4);
-  delay(1000);
-  LIN2.write(0x11, packageGRN, 4);
-  delay(1000);
-  LIN2.write(0x11, packageBLU, 4);
-  delay(1000);
-  LIN2.write(0x11, packageOFF, 4);
-  delay(1000);
+  for (int id=id_min; id<=id_max; id++) {
+    LIN2.writeRequest(id);
+    delay(3);
+    ret = LIN2.readStream(data, data_size);
+    if (ret != 0) {
+      digitalWrite(LED_BUILTIN, HIGH);
+    }
+    delay(1000);
+    digitalWrite(LED_BUILTIN, LOW);
+  }
 }

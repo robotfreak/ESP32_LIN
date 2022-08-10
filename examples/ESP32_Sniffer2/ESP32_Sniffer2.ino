@@ -1,4 +1,4 @@
-  
+ 
 /*  LIN Sniffer - Monitor traffic on LIN Bus
  *
  *  Written in September 2016 by Blaž Pongrac B.S., RoboSap, Institute of Technology, Ptuj (www.robosap-institut.eu) for Macchina LLC
@@ -18,8 +18,20 @@
 //#include <lin_stack_esp32.h>
 #include <Arduino.h>
 #include <HardwareSerial.h>
+#include <FastLED.h>
 
 #define LED_BUILTIN 2
+
+// How many leds in your strip?
+#define NUM_LEDS 1
+
+// For led chips like Neopixels, which have a data line, ground, and power, you just
+// need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
+// ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
+#define DATA_PIN 4
+
+// Define the array of leds
+CRGB leds[NUM_LEDS];
 
 // Variables
 const byte ident = 0x11; // Identification Byte
@@ -31,12 +43,17 @@ byte data[8]; // byte array for received data
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
+  FastLED.addLeds<WS2812, DATA_PIN>(leds, NUM_LEDS);
+
   Serial.begin(9600); // Configure Serial for Serial Monitor
   Serial.println("ESP32 LIN Sniffer");
 
   Serial2.begin(19200); // Configure Serial for Serial Monitor
   //LIN1.setSerial(); // Configure Serial for receiving
+  delay(500); 
 }
+
+byte response[4] = { 0, 1, 2, 3};
 
 void loop() {
    // Checking LIN Bus periodicly
@@ -44,7 +61,7 @@ void loop() {
   //byte a = LIN1.readStream(data, data_size);
   //if(a == 1){ // If there was an event on LIN Bus, Traffic was detected. Print data to serial monitor
   c = Serial2.available();
-  if (c > 0) {
+  if (c > 3) {
      digitalWrite(LED_BUILTIN, HIGH);
      Serial2.readBytes(data, c);    
      Serial.println("Traffic detected!");
@@ -65,6 +82,27 @@ void loop() {
      Serial.print("Check Byte: ");
      Serial.println(data[7]);
      Serial.print("\n");
+     leds[0].r = data[2];
+     leds[0].g = data[3];
+     leds[0].b = data[4];
+     FastLED.show();
      digitalWrite(LED_BUILTIN, LOW);
   } 
+  else if (c == 3) {
+     digitalWrite(LED_BUILTIN, HIGH);
+     Serial2.readBytes(data, c);    
+     if ((data[2] & 0x3f) == ident) {
+       Serial.println("Ident match!");
+       Serial2.write(response, 4);
+     }
+     Serial.println("Request detected!");
+     Serial.print("Break Byte: ");
+     Serial.println(data[0], HEX);
+     Serial.print("Synch Byte: ");
+     Serial.println(data[1], HEX);
+     Serial.print("Ident Byte: ");
+     Serial.println((data[2] & 0x3f), HEX);
+     digitalWrite(LED_BUILTIN, LOW);
+  }
+    
 }
